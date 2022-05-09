@@ -1,10 +1,9 @@
-import { v4 as uuidv4 } from 'uuid';
 import swal from 'sweetalert';
-import { IPlayer } from './interfaces/iPlayer.interface';
+import { Players } from './models/Players.model';
+import { defaultValues, defaultError } from './utils/config';
+import { DJ_URL } from './utils/api';
 
 import './style.css'
-
-
 
 const app: HTMLDivElement = <HTMLDivElement>document.querySelector<HTMLDivElement>('#app');
 
@@ -13,55 +12,37 @@ app.innerHTML = `
   <p>Tu app de sorteo favorita</p>
   <h2>Proximamente...</h2>`;
 
-
-const lotteryNumRef: number = 1000000;
-
-let players: IPlayer[] = [];
-
-
-
+const players: Players = new Players();
 
 
 async function loadPayers() {
-  const url = 'https://dummyjson.com/users?limit=100';
+  const url = `${ DJ_URL.urlBase }${ DJ_URL.users }?limit=${ defaultValues.limitUsers() }`;
 
   try {
     const response = await fetch( url );
     const result = await response.json();
-    generateId( result.users )
+    players.setPlayers( result.users );
+    console.log(players.getPlayers());
+    console.log(players.quantity);
   } catch( error ) {
     errorMessage( error )
   };
 };
 
-function errorMessage( _error: any ) {
-  swal({
-    title: "Ooohh nooo!",
-    text: "Parece que hay un error, volvé a intentarlo nuevamente...",
-    icon: "error",
-  });;
-};
-
-function generateId( players: IPlayer[] ) {
-  players.forEach(player => player.id = uuidv4() );
-  savePlayers( players );
-};
-
-function savePlayers(data : IPlayer[]) {
-  players = data;
-  console.log('savePlayers =>', players)
-  generateLotteryNumber()
-  
+function errorMessage( error: any = defaultError) {
+  swal( error );
 };
 
 function generateLotteryNumber() {
-  let lotteryNumber: number = Math.round( Math.random() * lotteryNumRef )
+  let lotteryNumber: number = Math.round( Math.random() * defaultValues.lotteryNumRef );
   console.log(lotteryNumber)
 };
 
 
+
 function init() {
   loadPayers();
+  generateLotteryNumber()
 };
 
 init();
