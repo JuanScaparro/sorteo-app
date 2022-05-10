@@ -1,6 +1,7 @@
 export const defaultValues = {
   lotteryNumRef: 1000000,
-  limitUsers: () => Math.round( Math.random()*100 )
+  limitUsers: () => Math.round( Math.random()*100 ),
+  quantityRef: 3
 };
 
 export const defaultError = {

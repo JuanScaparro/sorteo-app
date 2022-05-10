@@ -1,9 +1,10 @@
+import './style.css'
+
 import swal from 'sweetalert';
 import { Players } from './models/Players.model';
 import { defaultValues, defaultError } from './utils/config';
 import { DJ_URL } from './utils/api';
 
-import './style.css'
 
 const app: HTMLDivElement = <HTMLDivElement>document.querySelector<HTMLDivElement>('#app');
 
@@ -13,9 +14,12 @@ app.innerHTML = `
   <h2>Proximamente...</h2>`;
 
 const players: Players = new Players();
+let ticketsNumbers: number[] = [];
 
 
-async function loadPayers() {
+
+
+async function loadPayers(): Promise<void> {
   const url = `${ DJ_URL.urlBase }${ DJ_URL.users }?limit=${ defaultValues.limitUsers() }`;
 
   try {
@@ -23,7 +27,9 @@ async function loadPayers() {
     const result = await response.json();
     players.setPlayers( result.users );
     console.log(players.getPlayers());
-    console.log(players.quantity);
+    setTicketsNumbers();
+    console.log(ticketsNumbers);
+    players.setPlayersTicket( ticketsNumbers );
   } catch( error ) {
     errorMessage( error )
   };
@@ -33,16 +39,16 @@ function errorMessage( error: any = defaultError) {
   swal( error );
 };
 
-function generateLotteryNumber() {
-  let lotteryNumber: number = Math.round( Math.random() * defaultValues.lotteryNumRef );
-  console.log(lotteryNumber)
+function setTicketsNumbers(): void {
+  const quantity: number = players.quantity * defaultValues.quantityRef;
+  ticketsNumbers = Array.from(
+    { length: quantity },
+    () => Math.round( Math.random() * defaultValues.lotteryNumRef )
+  );
 };
-
-
 
 function init() {
   loadPayers();
-  generateLotteryNumber()
 };
 
 init();

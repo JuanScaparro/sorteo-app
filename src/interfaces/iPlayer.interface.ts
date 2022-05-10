@@ -14,5 +14,5 @@ export interface IPlayer {
     lng: number
     },
   },
-  lotteryNumber: number
+  ticket: number
 };

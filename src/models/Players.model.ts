@@ -1,6 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 import { IPlayer } from '../interfaces/iPlayer.interface';
 
+
+
+
 export class Players {
   
   private players: IPlayer[] = [];
@@ -14,7 +17,7 @@ export class Players {
 
   public setPlayers( players: IPlayer[] ): void {
     this.players = players;
-    this.quantity = this.players.length
+    this.quantity = this.players.length;
     this.setPlayersId();
   }
 
@@ -22,4 +25,12 @@ export class Players {
     this.players.forEach( player => player.id = uuidv4() );
   };
 
+  public setPlayersTicket( ticketsNumbers: number[] ) {
+    let tickets: number[] = [ ...ticketsNumbers ];
+    this.players.forEach( player => {
+      const rand: number =  Math.round( Math.random() * ( tickets.length - 1 ) )
+      player.ticket = tickets[ rand ];
+      tickets.splice( rand, 1 );
+    } );
+  };
 };
