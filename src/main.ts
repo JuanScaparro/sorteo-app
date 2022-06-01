@@ -2,8 +2,10 @@ import './style.css'
 
 import swal from 'sweetalert';
 import { Players } from './models/Players.model';
-import { defaultValues, defaultError } from './utils/config';
+import { defaultValues, errorMessage, winnerMessage, vacantMessage, headerMessage } from './utils/config';
 import { DJ_URL } from './utils/api';
+import { LotteryGame } from './models/Lottery-game.model';
+import { IModalArgs } from './interfaces/iModalArgs.interface';
 
 
 const headerInfo: HTMLDivElement = <HTMLDivElement>document.getElementById( 'headerInfo' );
@@ -13,9 +15,8 @@ const frontInfo: HTMLDivElement = <HTMLDivElement>document.getElementById( 'fron
 
 
 const players: Players = new Players();
+const lotteryGame: LotteryGame = new LotteryGame();
 let ticketsNumbers: number[] = [];
-let jackPot: string[] = [];
-
 
 
 async function loadPayers(): Promise<void> {
@@ -26,56 +27,48 @@ async function loadPayers(): Promise<void> {
     const result = await response.json();
     players.setPlayers( result.users );
     console.log(players.getPlayers());
-    setTicketsNumbers();
-    console.log(ticketsNumbers);
-    players.setPlayersTicket( ticketsNumbers );
-    createJackPotArray();
-    lottery( ticketsNumbers );
+    lotteryGame.setTicketsNumbers( players.getPlayers().length);
+    players.setPlayersTicket(lotteryGame.getTicketsNumbers());
+    lotteryGame.createJackPot(players.getPlayers().length);
+    lotteryGame.lottery( showResult );
   } catch( error ) {
-    errorMessage( error )
+    showMessage(true, {title: errorMessage.title, text: errorMessage.text})
   };
 };
 
-function errorMessage( error: any = defaultError) {
-  swal( error );
+function showMessage(isError: boolean, args: IModalArgs) {
+  swal({
+    title: args.title,
+    text: args.text,
+    icon: isError ? "error" : "success",
+    timer: 1500,
+  });
 };
 
-function setTicketsNumbers(): void {
-  const quantity: number = players.quantity * defaultValues.quantityRef;
-  ticketsNumbers = Array.from(
-    { length: quantity },
-    () => Math.round( Math.random() * defaultValues.lotteryNumRef )
-  );
-};
-
-function lottery( numbers: number[] ) {
-  let winnerNumber = numbers[ Math.floor( Math.random() * ticketsNumbers.length )];
-  showResultAlert( winnerNumber );
-};
-
-function showResultAlert( winnerNumber: number ) {
+function showResult( winnerNumber: number ) {
   const winner = players.getPlayerWinner( winnerNumber );
   if( winner !== undefined ){
-    swal({
-      title: "Nuevo ganador/a!!",
-      text: `${ winner.firstName.toUpperCase() } ${ winner.lastName.toUpperCase() }
-            Desde: ${ winner.address.city }`,
-      icon: "success",
-      timer: 1500,
-    });
-    showHeaderInfo( 'GANADOR DE LA SEMANA' );
+    showMessage(
+      false, 
+      {
+        title: winnerMessage.title,
+        text: `${ winner.firstName.toUpperCase() } ${ winner.lastName.toUpperCase() } Desde: ${ winner.address.city }`
+      }
+    )
+    showHeaderInfo( headerMessage.winner );
     showWinner( winnerNumber );
-    updateJackPot(true);
+    lotteryGame.updateJackPot(true);
   } else {
-    swal({
-      title: "Pozo vacante!!",
-      text: `La proxima semana puede ser tuyo...`,
-      icon: "error",
-      timer: 1500,
-    });
-    showHeaderInfo( 'PREMIO VACANTE' );
+    showMessage(
+      true, 
+      {
+        title: vacantMessage.title,
+        text: vacantMessage.text
+      }
+    )
+    showHeaderInfo( headerMessage.vacant );
     showVacantPot();
-    updateJackPot(false);
+    lotteryGame.updateJackPot(false);
   };
 };
 
@@ -106,35 +99,12 @@ function showVacantPot() {
   frontInfo.appendChild( div );
 };
 
-function createJackPotArray() {
-  const saledTicket: string = ( players.getPlayers().length * defaultValues.cost ).toString()
-  jackPot.push( saledTicket );
-  localStorage.setItem( 'jack-pot', JSON.stringify( jackPot ) );
-  console.log('createJackPot', jackPot)
-};
-
-function updateJackPot(isWinner: boolean) {
-  console.log('updateJackPot', jackPot)
-  const totalPot = jackPot.reduce( ( acumulado, actual ) => Number( acumulado ) + Number( actual ), 0 );
-  if(isWinner){
-    firstPrizePot( totalPot );
-  }
-  console.log('total =>',totalPot)
-};
-
-function firstPrizePot( totalPot: number ) {
-  const firstPrize = totalPot * defaultValues.firstPricePercent / 100;
-  console.log('firstPrize =>', firstPrize)
-  const restoAcumulado = totalPot - firstPrize;
-  console.log('Acumulado =>', restoAcumulado)
-};
-
 function saveDataLS( key: string ) {
   const dataLS = localStorage.getItem( key );
   if( dataLS ) {
-    jackPot = JSON.parse( dataLS );
+    lotteryGame.setJackPot(JSON.parse( dataLS ));
   } else {
-    localStorage.setItem( key, JSON.stringify( jackPot ) );
+    localStorage.setItem( key, JSON.stringify( lotteryGame.getJackpot() ) );
   };
 };
 
