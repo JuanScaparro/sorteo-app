@@ -6,16 +6,15 @@ import { defaultValues, defaultError } from './utils/config';
 import { DJ_URL } from './utils/api';
 
 
-const app: HTMLDivElement = <HTMLDivElement>document.querySelector<HTMLDivElement>('#app');
+const headerInfo: HTMLDivElement = <HTMLDivElement>document.getElementById( 'headerInfo' );
+const frontInfo: HTMLDivElement = <HTMLDivElement>document.getElementById( 'frontInfo' );
 
-app.innerHTML = `
-  <h1>Sorteo App!</h1>
-  <p>Tu app de sorteo favorita</p>
-  <h2>Proximamente...</h2>`;
+
+
 
 const players: Players = new Players();
 let ticketsNumbers: number[] = [];
-
+let jackPot: string[] = [];
 
 
 
@@ -30,6 +29,8 @@ async function loadPayers(): Promise<void> {
     setTicketsNumbers();
     console.log(ticketsNumbers);
     players.setPlayersTicket( ticketsNumbers );
+    lottery( ticketsNumbers );
+    createJackPotArray();
   } catch( error ) {
     errorMessage( error )
   };
@@ -47,8 +48,98 @@ function setTicketsNumbers(): void {
   );
 };
 
+function lottery( numbers: number[] ) {
+  let winnerNumber = numbers[ Math.floor( Math.random() * ticketsNumbers.length )];
+  showResultAlert( winnerNumber );
+};
+
+function showResultAlert( winnerNumber: number ) {
+  const winner = players.getPlayerWinner( winnerNumber );
+  if( winner !== undefined ){
+    swal({
+      title: "Nuevo ganador/a!!",
+      text: `${ winner.firstName.toUpperCase() } ${ winner.lastName.toUpperCase() }
+            Desde: ${ winner.address.city }`,
+      icon: "success",
+      timer: 1500,
+    });
+    showHeaderInfo( 'GANADOR DE LA SEMANA' );
+    showWinner( winnerNumber );
+  } else {
+    swal({
+      title: "Pozo vacante!!",
+      text: `La proxima semana puede ser tuyo...`,
+      icon: "error",
+      timer: 1500,
+    });
+    showHeaderInfo( 'PREMIO VACANTE' );
+    showVacantPot();
+  };
+};
+
+function showHeaderInfo( setInfo: string ) {
+  const template = `${ setInfo }`;
+  const div = document.createElement( 'div' );
+  div.innerHTML = template;
+  headerInfo.appendChild( div );
+};
+
+function showWinner( winnerNumber: number ) {
+  const winner = players.getPlayerWinner( winnerNumber );
+  const template = `<h2>Ganoooo $${ winner?.ticketCost }!!!</h2>
+                    <h4>Ticket ganador N°: ${ winner?.ticket }</h4>
+                    <h3>${ winner?.firstName } ${ winner?.maidenName } ${ winner?.lastName }</h3>
+                    <p>Desde: ${ winner?.address.city } </p>`;
+  const div = document.createElement( 'div' );
+  div.innerHTML = template;
+  frontInfo.appendChild( div );
+};
+
+function showVacantPot() {
+  const template = `<h2>Pozo vacante!!</h2>
+                    <p>No te pierdas el pozo acumulado de la proxima semana</p>
+                    <p><span>$000000.00</span></p>`;
+  const div = document.createElement( 'div' );
+  div.innerHTML = template;
+  frontInfo.appendChild( div );
+};
+
+function createJackPotArray() {
+  const saledTicket: string = ( players.getPlayers().length * defaultValues.cost ).toString()
+  jackPot.push( saledTicket );
+  localStorage.setItem( 'jack-pot', JSON.stringify( jackPot ) );
+  addJackPot();
+};
+
+function addJackPot() {
+  const totalPot = jackPot.reduce( ( acumulado, actual ) => Number( acumulado ) + Number( actual ), 0 );
+  firstPrizePot( totalPot );
+  console.log('total =>',totalPot)
+};
+
+function firstPrizePot( totalPot: number ) {
+  const firstPrize = totalPot * defaultValues.firstPricePercent / 100;
+  console.log('prize =>', firstPrize)
+  const restoAcumulado = totalPot - firstPrize;
+  console.log('Acumulado =>', restoAcumulado)
+};
+
+function saveDataLS( key: string ) {
+  const dataLS = localStorage.getItem( key );
+  if( dataLS ) {
+    jackPot = JSON.parse( dataLS );
+  } else {
+    localStorage.setItem( key, JSON.stringify( jackPot ) );
+  };
+};
+
 function init() {
   loadPayers();
+  saveDataLS('jack-pot');
 };
 
 init();
+
+// Pasar el sorteo a una clase.
+// Ver cuando el sorteo queda vacante la resta del primer premio se realiza igual.
+// Ver almacenamiento de los datos en localStorage en un objeto.

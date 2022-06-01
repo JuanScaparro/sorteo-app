@@ -14,5 +14,6 @@ export interface IPlayer {
     lng: number
     },
   },
-  ticket: number
+  ticket: number,
+  ticketCost: number
 };
