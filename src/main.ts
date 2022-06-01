@@ -29,8 +29,8 @@ async function loadPayers(): Promise<void> {
     setTicketsNumbers();
     console.log(ticketsNumbers);
     players.setPlayersTicket( ticketsNumbers );
-    lottery( ticketsNumbers );
     createJackPotArray();
+    lottery( ticketsNumbers );
   } catch( error ) {
     errorMessage( error )
   };
@@ -65,6 +65,7 @@ function showResultAlert( winnerNumber: number ) {
     });
     showHeaderInfo( 'GANADOR DE LA SEMANA' );
     showWinner( winnerNumber );
+    updateJackPot(true);
   } else {
     swal({
       title: "Pozo vacante!!",
@@ -74,6 +75,7 @@ function showResultAlert( winnerNumber: number ) {
     });
     showHeaderInfo( 'PREMIO VACANTE' );
     showVacantPot();
+    updateJackPot(false);
   };
 };
 
@@ -108,18 +110,21 @@ function createJackPotArray() {
   const saledTicket: string = ( players.getPlayers().length * defaultValues.cost ).toString()
   jackPot.push( saledTicket );
   localStorage.setItem( 'jack-pot', JSON.stringify( jackPot ) );
-  addJackPot();
+  console.log('createJackPot', jackPot)
 };
 
-function addJackPot() {
+function updateJackPot(isWinner: boolean) {
+  console.log('updateJackPot', jackPot)
   const totalPot = jackPot.reduce( ( acumulado, actual ) => Number( acumulado ) + Number( actual ), 0 );
-  firstPrizePot( totalPot );
+  if(isWinner){
+    firstPrizePot( totalPot );
+  }
   console.log('total =>',totalPot)
 };
 
 function firstPrizePot( totalPot: number ) {
   const firstPrize = totalPot * defaultValues.firstPricePercent / 100;
-  console.log('prize =>', firstPrize)
+  console.log('firstPrize =>', firstPrize)
   const restoAcumulado = totalPot - firstPrize;
   console.log('Acumulado =>', restoAcumulado)
 };
@@ -139,7 +144,3 @@ function init() {
 };
 
 init();
-
-// Pasar el sorteo a una clase.
-// Ver cuando el sorteo queda vacante la resta del primer premio se realiza igual.
-// Ver almacenamiento de los datos en localStorage en un objeto.
