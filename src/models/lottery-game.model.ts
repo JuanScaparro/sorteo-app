@@ -7,6 +7,7 @@ export class LotteryGame {
 
   constructor(){}
 
+  // START
   public setTicketsNumbers(playersQuantity: number): void {
     const quantity: number = playersQuantity * defaultValues.quantityRef;
     this.ticketsNumbers = Array.from(
@@ -22,11 +23,13 @@ export class LotteryGame {
     console.log('createJackPot', this.jackPot)
   };
 
+  // LOTTERY
   public lottery( callback: Function ) {
     let winnerNumber = this.ticketsNumbers[ Math.floor( Math.random() * this.ticketsNumbers.length )];
     callback( winnerNumber );
   };
   
+  // END
   public updateJackPot(isWinner: boolean) {
     console.log('updateJackPot', this.jackPot)
     const totalPot = this.jackPot.reduce( ( acumulado, actual ) => Number( acumulado ) + Number( actual ), 0 );
@@ -55,5 +58,6 @@ export class LotteryGame {
   public setJackPot( jackPot: string[] ) {
     this.jackPot = jackPot;
   };
+
 
 }

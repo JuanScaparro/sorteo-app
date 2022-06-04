@@ -24,5 +24,9 @@ export const headerMessage = {
   vacant: 'PREMIO VACANTE',
 };
 
+export const DB_KEYS = {
+  jackpot: 'jack-pot'
+};
+
 
 

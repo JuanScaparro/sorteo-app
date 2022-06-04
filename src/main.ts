@@ -6,6 +6,7 @@ import { defaultValues, errorMessage, winnerMessage, vacantMessage, headerMessag
 import { DJ_URL } from './utils/api';
 import { LotteryGame } from './models/Lottery-game.model';
 import { IModalArgs } from './interfaces/iModalArgs.interface';
+import { HistoryData } from './models/History.model';
 
 
 const headerInfo: HTMLDivElement = <HTMLDivElement>document.getElementById( 'headerInfo' );
@@ -16,6 +17,7 @@ const frontInfo: HTMLDivElement = <HTMLDivElement>document.getElementById( 'fron
 
 const players: Players = new Players();
 const lotteryGame: LotteryGame = new LotteryGame();
+const history: HistoryData = new HistoryData();
 
 
 async function loadPayers(): Promise<void> {
@@ -98,18 +100,9 @@ function showVacantPot() {
   frontInfo.appendChild( div );
 };
 
-function saveDataLS( key: string ) {
-  const dataLS = localStorage.getItem( key );
-  if( dataLS ) {
-    lotteryGame.setJackPot(JSON.parse( dataLS ));
-  } else {
-    localStorage.setItem( key, JSON.stringify( lotteryGame.getJackpot() ) );
-  };
-};
-
 function init() {
   loadPayers();
-  saveDataLS('jack-pot');
+  history.saveData();
 };
 
 init();
