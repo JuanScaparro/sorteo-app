@@ -16,7 +16,6 @@ const frontInfo: HTMLDivElement = <HTMLDivElement>document.getElementById( 'fron
 
 const players: Players = new Players();
 const lotteryGame: LotteryGame = new LotteryGame();
-let ticketsNumbers: number[] = [];
 
 
 async function loadPayers(): Promise<void> {
